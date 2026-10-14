@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sticker Helper — Kunwar & Jasmin Journal</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #f5f0e8;
+      color: #3b2a1a;
+      padding: 40px 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    h1 { font-size: 1.8rem; margin-bottom: 8px; }
+    p { margin-bottom: 24px; opacity: 0.8; }
+    .box {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      margin-bottom: 24px;
+    }
+    input[type="file"] {
+      display: block;
+      margin: 12px 0 20px;
+    }
+    button {
+      background: #5c3316;
+      color: #fef0d0;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 30px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    button:hover { background: #7a4828; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    #preview {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 20px;
+    }
+    .sticker-preview {
+      width: 80px;
+      text-align: center;
+      font-size: 0.75rem;
+    }
+    .sticker-preview img {
+      width: 64px;
+      height: 64px;
+      object-fit: contain;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: #fafafa;
+    }
+    textarea {
+      width: 100%;
+      height: 180px;
+      font-family: monospace;
+      font-size: 0.9rem;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      margin-top: 12px;
+      resize: vertical;
+    }
+    .success { color: #2e7d32; font-weight: 600; margin-top: 12px; }
+  </style>
+</head>
+<body>
+
+  <h1>🎨 Sticker Helper</h1>
+  <p>Select all your sticker images → it will rename them and give you the code for <code>app.js</code></p>
+
+  <div class="box">
+    <label><strong>1. Select your sticker images</strong></label>
+    <input type="file" id="fileInput" multiple accept="image/*" />
+    <button id="processBtn" disabled>Process Stickers</button>
+    <div id="preview"></div>
+  </div>
+
+  <div class="box" id="resultBox" style="display:none">
+    <h3>2. Download the renamed stickers</h3>
+    <p>Click each link below to download the files into your <code>stickers/</code> folder:</p>
+    <div id="downloadLinks"></div>
+
+    <h3 style="margin-top:28px">3. Copy this code into <code>app.js</code></h3>
+    <p>Replace the existing <code>IMAGE_STICKERS</code> array with this:</p>
+    <textarea id="codeOutput" readonly></textarea>
+    <br><br>
+    <button onclick="copyCode()">Copy Code</button>
+    <div id="copyMsg" class="success" style="display:none">Copied!</div>
+  </div>
+
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const processBtn = document.getElementById('processBtn');
+    const preview = document.getElementById('preview');
+    const resultBox = document.getElementById('resultBox');
+    const downloadLinks = document.getElementById('downloadLinks');
+    const codeOutput = document.getElementById('codeOutput');
+
+    let files = [];
+
+    fileInput.addEventListener('change', () => {
+      files = Array.from(fileInput.files);
+      processBtn.disabled = files.length === 0;
+      preview.innerHTML = '';
+      files.forEach(file => {
+        const div = document.createElement('div');
+        div.className = 'sticker-preview';
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(file);
+        div.appendChild(img);
+        div.appendChild(document.createElement('br'));
+        div.appendChild(document.createTextNode(file.name));
+        preview.appendChild(div);
+      });
+    });
+
+    processBtn.addEventListener('click', () => {
+      if (files.length === 0) return;
+
+      downloadLinks.innerHTML = '';
+      const codeLines = [];
+
+      files.forEach((file, index) => {
+        const num = index + 1;
+        const ext = file.name.split('.').pop().toLowerCase();
+        const newName = `sticker-${num}.${ext}`;
+
+        // Create download link
+        const url = URL.createObjectURL(file);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = newName;
+        a.textContent = `Download ${newName}`;
+        a.style.display = 'block';
+        a.style.margin = '6px 0';
+        downloadLinks.appendChild(a);
+
+        // Build code
+        codeLines.push(`  { src: "stickers/${newName}", alt: "sticker ${num}" },`);
+      });
+
+      codeOutput.value = `const IMAGE_STICKERS = [\n${codeLines.join('\n')}\n];`;
+      resultBox.style.display = 'block';
+    });
+
+    function copyCode() {
+      codeOutput.select();
+      document.execCommand('copy');
+      document.getElementById('copyMsg').style.display = 'block';
+      setTimeout(() => {
+        document.getElementById('copyMsg').style.display = 'none';
+      }, 2000);
+    }
+  </script>
+</body>
+</html>

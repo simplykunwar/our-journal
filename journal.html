@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Our Journal 🤍</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet"/>
+</head>
+<body class="journal-body">
+
+  <!-- HEADER -->
+  <header class="journal-header">
+    <div class="header-left">
+      <span class="header-logo">♡ K &amp; J</span>
+      <span class="last-visited" id="lastVisited"></span>
+    </div>
+    <div class="header-center">
+      <input type="text" id="searchInput" class="search-bar" placeholder="🔍 search our memories..."/>
+    </div>
+    <div class="header-right">
+      <span class="sync-status" id="syncStatus" title="Sync status">●</span>
+      <button class="btn-random" onclick="openRandomNote()">🎲 Surprise</button>
+      <button class="btn-new"    onclick="openEditor()">✏️ New Entry</button>
+    </div>
+  </header>
+
+  <!-- DAILY QUOTE -->
+  <div class="daily-quote-bar" id="dailyQuote"></div>
+
+  <!-- FLOATING NOTES CANVAS -->
+  <main class="notes-canvas" id="notesCanvas">
+    <div class="empty-state" id="emptyState">
+      <div class="empty-icon">📖</div>
+      <div class="empty-text">Your journal is empty...<br/>Write your first memory ✨</div>
+    </div>
+    <div class="loading-state" id="loadingState">
+      <div class="loading-text">Loading your memories... ☕</div>
+    </div>
+  </main>
+
+  <!-- ══════════════ EDITOR MODAL ══════════════ -->
+  <div class="modal-overlay" id="editorOverlay" onclick="closeEditorOnOverlay(event)">
+    <div class="editor-modal">
+      <button class="modal-close" onclick="closeEditor()">✕</button>
+
+      <!-- Voice selector -->
+      <div class="voice-selector">
+        <button class="voice-btn active" id="voiceKunwar" onclick="selectVoice('Kunwar')">
+          <span class="voice-dot kunwar-dot"></span> Kunwar
+        </button>
+        <button class="voice-btn" id="voiceJasmin" onclick="selectVoice('Jasmin')">
+          <span class="voice-dot jasmin-dot"></span> Jasmin
+        </button>
+      </div>
+
+      <!-- Mood -->
+      <div class="mood-label">How are you feeling?</div>
+      <div class="mood-grid" id="moodGrid"></div>
+
+      <!-- ── RICH TEXT TOOLBAR ── -->
+      <div class="editor-toolbar" id="editorToolbar">
+        <!-- Text style -->
+        <div class="toolbar-group">
+          <button class="tb" data-action="bold"      title="Bold (*text*)">𝐁</button>
+          <button class="tb" data-action="italic"    title="Italic (-text-)"><i>I</i></button>
+          <button class="tb" data-action="underline" title="Underline (_text_)"><u>U</u></button>
+          <button class="tb" data-action="strike"    title="Strikethrough (~text~)"><s>S</s></button>
+        </div>
+        <div class="toolbar-sep"></div>
+        <!-- Text size -->
+        <div class="toolbar-group">
+          <button class="tb" data-action="size-small"  title="Small text">aₛ</button>
+          <button class="tb" data-action="size-normal" title="Normal text">A</button>
+          <button class="tb" data-action="size-large"  title="Large text">A⁺</button>
+          <button class="tb" data-action="size-huge"   title="Huge text">A⁺⁺</button>
+        </div>
+        <div class="toolbar-sep"></div>
+        <!-- Headings -->
+        <div class="toolbar-group">
+          <button class="tb" data-action="h1" title="Heading 1">H1</button>
+          <button class="tb" data-action="h2" title="Heading 2">H2</button>
+        </div>
+        <div class="toolbar-sep"></div>
+        <!-- Lists -->
+        <div class="toolbar-group">
+          <button class="tb" data-action="bullet"    title="Bullet list">• —</button>
+          <button class="tb" data-action="numbered"  title="Numbered list">1.</button>
+          <button class="tb" data-action="checklist" title="Checklist">☐</button>
+        </div>
+        <div class="toolbar-sep"></div>
+        <!-- Align -->
+        <div class="toolbar-group">
+          <button class="tb" data-action="align-left"   title="Align left">⬅</button>
+          <button class="tb" data-action="align-center" title="Center">↔</button>
+          <button class="tb" data-action="align-right"  title="Align right">➡</button>
+        </div>
+        <div class="toolbar-sep"></div>
+        <!-- Extras -->
+        <div class="toolbar-group">
+          <button class="tb" data-action="divider" title="Divider line">―</button>
+          <button class="tb" data-action="quote"   title="Quote block">❝</button>
+        </div>
+      </div>
+
+      <!-- Writing area -->
+      <div class="editor-textarea" id="editorTextarea"
+        contenteditable="true" spellcheck="true"
+        data-placeholder="write here, love..."></div>
+
+      <!-- Sticker tray -->
+      <div class="sticker-section">
+        <div class="sticker-label">🎨 Stickers</div>
+        <div class="sticker-tray" id="stickerTray"></div>
+      </div>
+
+      <div class="editor-footer">
+        <button class="btn-cancel" onclick="closeEditor()">Cancel</button>
+        <button class="btn-save"   onclick="saveEntry()">Save Entry 💾</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ VIEW MODAL ══════════════ -->
+  <div class="modal-overlay" id="viewOverlay" onclick="closeViewOnOverlay(event)">
+    <div class="view-modal">
+      <button class="modal-close" onclick="closeView()">✕</button>
+      <div class="view-meta"     id="viewMeta"></div>
+      <div class="view-content"  id="viewContent"></div>
+      <div class="view-stickers" id="viewStickers"></div>
+      <div class="view-actions">
+        <button class="btn-star-view"   id="viewStarBtn"  onclick="toggleStarFromView()">⭐ Star</button>
+        <button class="btn-edit-view"                     onclick="editFromView()">✏️ Edit</button>
+        <button class="btn-delete-view"                   onclick="deleteFromView()">🗑️ Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="supabase.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

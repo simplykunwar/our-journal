@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Our Journal 🤍</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet"/>
+</head>
+<body class="login-body">
+  <div class="login-page">
+    <div class="notebook-cover">
+      <div class="cover-spine"></div>
+      <div class="cover-content">
+        <div class="cover-title">Our Little<br/>Journal</div>
+        <div class="cover-heart">♡</div>
+        <div class="cover-names">Kunwar &amp; Jasmin</div>
+        <div class="lock-area">
+          <div class="lock-icon">🔒</div>
+          <input type="password" id="passwordInput" class="password-input"
+            placeholder="our secret password..." autocomplete="off"/>
+          <button class="unlock-btn" onclick="checkPassword()">Open Journal</button>
+          <div class="wrong-pw" id="wrongMsg">wrong password, love 💔</div>
+        </div>
+      </div>
+    </div>
+    <div class="float-deco d1">✦</div>
+    <div class="float-deco d2">♡</div>
+    <div class="float-deco d3">✿</div>
+    <div class="float-deco d4">✦</div>
+    <div class="float-deco d5">☽</div>
+  </div>
+  <script>
+    const SECRET_PASSWORD = "0806";
+    function checkPassword() {
+      const input = document.getElementById("passwordInput").value;
+      const msg   = document.getElementById("wrongMsg");
+      if (input === SECRET_PASSWORD) {
+        document.querySelector(".notebook-cover").style.transform = "rotateY(-180deg) scale(0.8)";
+        document.querySelector(".notebook-cover").style.opacity   = "0";
+        setTimeout(() => { window.location.href = "journal.html"; }, 600);
+      } else {
+        msg.style.display = "block";
+        document.getElementById("passwordInput").classList.add("shake");
+        setTimeout(() => document.getElementById("passwordInput").classList.remove("shake"), 500);
+      }
+    }
+    document.getElementById("passwordInput").addEventListener("keydown", e => {
+      if (e.key === "Enter") checkPassword();
+    });
+  </script>
+</body>
+</html>

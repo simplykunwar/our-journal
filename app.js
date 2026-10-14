@@ -109,6 +109,25 @@ const IMAGE_STICKERS = [
   { src: "stickers/sticker-50.jpg", alt: "sticker 50" },
 ];
 
+/* ── FONT LIST & LOADER (per-note) ───────────────────── */
+const FONTS = {
+  Caveat: { css: "'Caveat', cursive", href: "https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&display=swap" },
+  Lora:   { css: "'Lora', serif", href: "https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&display=swap" },
+  Inter:  { css: "'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial", href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" },
+  Roboto: { css: "'Roboto', system-ui, -apple-system, 'Segoe UI', Arial", href: "https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" },
+  Merriweather: { css: "'Merriweather', serif", href: "https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap" },
+};
+
+function loadFontHref(href) {
+  if (!href) return;
+  if (!document.querySelector(`link[href="${href}"]`)) {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = href;
+    document.head.appendChild(link);
+  }
+}
+
 /* ── STORAGE ────────────────────────────── */
 const LS_KEY       = "kj_journal_notes";
 const LS_VISIT_KEY = "kj_last_visited";
@@ -126,6 +145,7 @@ let selectedStickers = [];
 let editingId        = null;
 let viewingId        = null;
 let usingSupabase    = false;
+let selectedFont     = 'Lora';
 
 /* ── Active format toggles ──────────────── */
 const activeFormats = {
@@ -142,6 +162,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   buildStickerTray();
   setupSearch();
   setupToolbar();
+  setupFontSelector();
   showLastVisited();
   await loadNotes();
   recordVisit();
@@ -175,6 +196,7 @@ async function loadNotes() {
         id: r.id, rawText: r.raw_text, voice: r.voice,
         mood: r.mood, stickers: r.stickers || [],
         starred: r.starred, createdAt: r.created_at, editedAt: r.edited_at,
+        font: r.font || 'Lora',
       }));
       usingSupabase = true;
       setSyncStatus("online");
@@ -193,6 +215,8 @@ async function loadNotes() {
 function loadFromLocalStorage() {
   try { const r = localStorage.getItem(LS_KEY); notes = r ? JSON.parse(r) : []; }
   catch { notes = []; }
+  // ensure old notes have a font
+  notes = notes.map(n => ({ ...n, font: n.font || 'Lora' }));
   usingSupabase = false;
 }
 
@@ -309,6 +333,23 @@ function selectVoice(name) {
   document.getElementById("voiceJasmin").classList.toggle("active", name === "Jasmin");
   const ta = document.getElementById("editorTextarea");
   if (ta) ta.style.color = name === "Kunwar" ? "var(--ink-kunwar)" : "var(--ink-jasmin)";
+}
+
+/* ══════════════════════════════════════════
+   FONT SELECTOR
+══════════════════════════════════════════ */
+function setupFontSelector() {
+  const sel = document.getElementById('fontSelect');
+  if (!sel) return;
+  // populate from FONTS (keeps HTML dropdown in sync)
+  sel.innerHTML = Object.keys(FONTS).map(k => `<option value="${k}">${k}</option>`).join('');
+  sel.addEventListener('change', () => {
+    selectedFont = sel.value;
+    const f = FONTS[selectedFont];
+    if (f) loadFontHref(f.href);
+    const ta = document.getElementById('editorTextarea');
+    if (ta) ta.style.fontFamily = f ? f.css : '';
+  });
 }
 
 /* ══════════════════════════════════════════
@@ -448,10 +489,7 @@ function insertChecklist() {
   const sel = window.getSelection();
   const text = (sel && sel.rangeCount > 0) ? sel.getRangeAt(0).toString() : "checklist item";
   document.execCommand("insertHTML", false,
-    `<span class="r-check" style="display:flex;align-items:center;gap:6px;cursor:pointer" onclick="this.classList.toggle('done');this.querySelector('.r-check-box').textContent=this.classList.contains('done')?'☑':'☐'">` +
-    `<span class="r-check-box">☐</span>` +
-    `<span class="r-check-text">${text || "item"}</span></span><br>`
-  );
+    `<span class="r-check" style="display:flex;align-items:center;gap:6px;cursor:pointer" onclick="this.classList.toggle('done');this.querySelector('.r-check-box').textContent=this.classList.cont[...]`)
 }
 
 /* ── Insert blockquote ── */
@@ -495,6 +533,7 @@ function openEditor(noteId = null) {
   editingId = noteId;
   const overlay = document.getElementById("editorOverlay");
   const ta      = document.getElementById("editorTextarea");
+  const fontSel = document.getElementById('fontSelect');
 
   selectedMood = null;
   clearStickerSelections();
@@ -518,10 +557,16 @@ function openEditor(noteId = null) {
       if (el) el.classList.add("selected-sticker");
     });
     ta.innerHTML = note.rawText || "";
+    selectedFont = note.font || 'Lora';
+    if (fontSel) fontSel.value = selectedFont;
+    const f = FONTS[selectedFont]; if (f) { loadFontHref(f.href); ta.style.fontFamily = f.css; }
   } else {
     const lastVoice = sessionStorage.getItem("kj_voice") || "Kunwar";
     selectVoice(lastVoice);
     ta.innerHTML = "";
+    selectedFont = 'Lora';
+    if (fontSel) fontSel.value = selectedFont;
+    const f = FONTS[selectedFont]; if (f) { loadFontHref(f.href); ta.style.fontFamily = f.css; }
   }
 
   overlay.classList.add("open");
@@ -558,11 +603,12 @@ async function saveEntry() {
       note.voice    = selectedVoice;
       note.mood     = selectedMood;
       note.stickers = [...selectedStickers];
+      note.font     = selectedFont || 'Lora';
       note.editedAt = new Date().toISOString();
       if (usingSupabase) {
         await sb.update(note.id, {
           rawText: html, voice: note.voice, mood: note.mood,
-          stickers: note.stickers, editedAt: note.editedAt,
+          stickers: note.stickers, editedAt: note.editedAt, font: note.font,
         });
       }
     }
@@ -571,6 +617,7 @@ async function saveEntry() {
       id: null, rawText: html, voice: selectedVoice,
       mood: selectedMood, stickers: [...selectedStickers],
       starred: false, createdAt: new Date().toISOString(), editedAt: null,
+      font: selectedFont || 'Lora',
     };
     if (usingSupabase) {
       const row = await sb.insert(newNote);
@@ -662,6 +709,13 @@ function renderNotes(filterText = "") {
       ${stickerHtml}
     `;
 
+    // apply per-note font if present
+    const bodyEl = card.querySelector('.note-body');
+    if (bodyEl) {
+      const f = FONTS[note.font] || null;
+      if (f) bodyEl.style.fontFamily = f.css;
+    }
+
     card.onclick = () => openView(note.id);
     canvas.appendChild(card);
   });
@@ -735,6 +789,11 @@ function openView(id) {
 
   contentEl.className = `view-content ${inkCls}`;
   contentEl.innerHTML = note.rawText || "";
+
+  // apply saved font
+  const f = FONTS[note.font] || null;
+  if (f) { loadFontHref(f.href); contentEl.style.fontFamily = f.css; }
+  else contentEl.style.fontFamily = '';
 
   // Re-attach checklist handlers
   contentEl.querySelectorAll(".r-check").forEach(el => {

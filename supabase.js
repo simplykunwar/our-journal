@@ -32,6 +32,7 @@ const sb = {
           mood:       note.mood,
           stickers:   note.stickers,
           starred:    note.starred,
+          font:       note.font || "handwriting",
           created_at: note.createdAt,
           edited_at:  note.editedAt || null
         })
@@ -50,6 +51,7 @@ const sb = {
       if (fields.mood     !== undefined) body.mood      = fields.mood;
       if (fields.stickers !== undefined) body.stickers  = fields.stickers;
       if (fields.starred  !== undefined) body.starred   = fields.starred;
+      if (fields.font     !== undefined) body.font      = fields.font;
       if (fields.editedAt !== undefined) body.edited_at = fields.editedAt;
       const res = await fetch(`${SUPABASE_URL}/rest/v1/journal_entries?id=eq.${id}`, {
         method: "PATCH",

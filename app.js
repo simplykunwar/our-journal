@@ -2,7 +2,7 @@
    OUR JOURNAL — app.js  (Kunwar & Jasmin)
    Features: Supabase sync, rich text toolbar (toggle-based),
    moods, stickers, floating notes, star, search, random,
-   voices, daily quote, last visited, checklist toggle
+   voices, daily quote, last visited, checklist toggle, fonts
 ═══════════════════════════════════════════════════════════ */
 
 /* ── MOODS ─────────────────────────────── */
@@ -48,13 +48,15 @@ const QUOTES = [
   "I love you a little more than yesterday, a little less than tomorrow.",
 ];
 
+/* ── IMAGE STICKERS (empty) ── */
+const IMAGE_STICKERS = [];
+
 /* ── EMOJI STICKERS ─────────────────────── */
 const EMOJI_STICKERS = [
   "🌸","💌","✨","🎀","🍂","☕","🌙","⭐","🌹","💐",
   "🫀","🤍","🌊","🍓","🎵","💫","🦋","🌿","🍀","🫧",
   "🕯️","📜","🎐","🧸","🫐","🍵","🌺","💝","🎶","🌛",
 ];
-
 
 /* ── STORAGE ────────────────────────────── */
 const LS_KEY       = "kj_journal_notes";
@@ -65,11 +67,21 @@ const SUPABASE_READY = (
   SUPABASE_URL !== "YOUR_SUPABASE_URL_HERE"
 );
 
+/* ── FONTS ──────────────────────────────── */
+const FONTS = {
+  handwriting: { label: "Handwriting", family: "'Caveat', cursive" },
+  elegant:     { label: "Elegant",     family: "'Lora', Georgia, serif" },
+  clean:       { label: "Clean",       family: "system-ui, -apple-system, sans-serif" },
+  typewriter:  { label: "Typewriter",  family: "'Courier New', Courier, monospace" },
+};
+const LS_FONT_KEY = "kj_default_font";
+
 /* ── STATE ──────────────────────────────── */
 let notes            = [];
 let selectedVoice    = "Kunwar";
 let selectedMood     = null;
 let selectedStickers = [];
+let selectedFont     = localStorage.getItem(LS_FONT_KEY) || "handwriting";
 let editingId        = null;
 let viewingId        = null;
 let usingSupabase    = false;
@@ -122,6 +134,7 @@ async function loadNotes() {
         id: r.id, rawText: r.raw_text, voice: r.voice,
         mood: r.mood, stickers: r.stickers || [],
         starred: r.starred, createdAt: r.created_at, editedAt: r.edited_at,
+        font: r.font || "handwriting",
       }));
       usingSupabase = true;
       setSyncStatus("online");
@@ -216,7 +229,7 @@ function buildStickerTray() {
   const tray = document.getElementById("stickerTray");
   if (!tray) return;
   tray.innerHTML = "";
-  IMAGE_STICKERS.forEach((s, i) => {
+  (IMAGE_STICKERS || []).forEach((s, i) => {
     const img       = document.createElement("img");
     img.src         = s.src; img.alt = s.alt;
     img.className   = "sticker-item";
@@ -259,12 +272,29 @@ function selectVoice(name) {
 }
 
 /* ══════════════════════════════════════════
+   FONT SELECTOR
+══════════════════════════════════════════ */
+function selectFont(fontKey, setAsDefault = false) {
+  selectedFont = fontKey;
+  if (setAsDefault) localStorage.setItem(LS_FONT_KEY, fontKey);
+  document.querySelectorAll(".font-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.font === fontKey);
+  });
+  applyFontToEditor();
+}
+
+function applyFontToEditor() {
+  const ta = document.getElementById("editorTextarea");
+  if (!ta) return;
+  const fam = (FONTS[selectedFont] || FONTS.handwriting).family;
+  ta.style.fontFamily = fam;
+}
+
+function getFontFamily(key) {
+  return (FONTS[key] || FONTS.handwriting).family;
+}
+/* ══════════════════════════════════════════
    TOOLBAR — TOGGLE-BASED REAL EDITOR
-   Uses document.execCommand for inline formatting
-   so it works exactly like a real text editor:
-   select text → click bold → it goes bold.
-   click bold again → it turns off.
-   type while bold is active → text comes out bold.
 ══════════════════════════════════════════ */
 function setupToolbar() {
   const toolbar = document.getElementById("editorToolbar");
@@ -272,12 +302,11 @@ function setupToolbar() {
 
   toolbar.querySelectorAll(".tb").forEach(btn => {
     btn.addEventListener("mousedown", e => {
-      e.preventDefault(); // keep focus in editor
+      e.preventDefault();
       handleToolbarClick(btn.dataset.action, btn);
     });
   });
 
-  // Update toolbar button states when cursor moves
   const ta = document.getElementById("editorTextarea");
   if (ta) {
     ta.addEventListener("keyup",   updateToolbarState);
@@ -291,7 +320,6 @@ function handleToolbarClick(action, btn) {
   ta.focus();
 
   switch (action) {
-    /* ── Inline toggles (execCommand handles on/off) ── */
     case "bold":
       document.execCommand("bold", false, null);
       break;
@@ -304,10 +332,8 @@ function handleToolbarClick(action, btn) {
     case "strike":
       document.execCommand("strikeThrough", false, null);
       break;
-
-    /* ── Font size ── */
     case "size-small":
-      setFontSize("1");   // execCommand fontSize uses 1-7
+      setFontSize("1");
       break;
     case "size-normal":
       setFontSize("3");
@@ -318,16 +344,12 @@ function handleToolbarClick(action, btn) {
     case "size-huge":
       setFontSize("7");
       break;
-
-    /* ── Headings (insert a styled block) ── */
     case "h1":
       insertStyledBlock("h1");
       break;
     case "h2":
       insertStyledBlock("h2");
       break;
-
-    /* ── Lists ── */
     case "bullet":
       document.execCommand("insertUnorderedList", false, null);
       break;
@@ -337,8 +359,6 @@ function handleToolbarClick(action, btn) {
     case "checklist":
       insertChecklist();
       break;
-
-    /* ── Alignment ── */
     case "align-left":
       document.execCommand("justifyLeft", false, null);
       break;
@@ -348,8 +368,6 @@ function handleToolbarClick(action, btn) {
     case "align-right":
       document.execCommand("justifyRight", false, null);
       break;
-
-    /* ── Extras ── */
     case "divider":
       document.execCommand("insertHorizontalRule", false, null);
       break;
@@ -357,17 +375,11 @@ function handleToolbarClick(action, btn) {
       insertQuoteBlock();
       break;
   }
-
-  // Update active states on toolbar buttons
   updateToolbarState();
 }
 
-/* ── Font size via execCommand ── */
 function setFontSize(size) {
-  // execCommand fontSize wraps in <font size="N">
-  // We then convert to a span with real CSS
   document.execCommand("fontSize", false, size);
-  // Convert <font> tags to styled spans
   const ta = document.getElementById("editorTextarea");
   ta.querySelectorAll("font[size]").forEach(font => {
     const sizeMap = { "1":"0.75em","2":"0.875em","3":"1em","4":"1.15em","5":"1.35em","6":"1.6em","7":"2em" };
@@ -378,7 +390,6 @@ function setFontSize(size) {
   });
 }
 
-/* ── Insert heading block ── */
 function insertStyledBlock(tag) {
   const sel = window.getSelection();
   const selectedText = sel && sel.rangeCount > 0 ? sel.getRangeAt(0).toString() : "";
@@ -390,7 +401,6 @@ function insertStyledBlock(tag) {
   );
 }
 
-/* ── Insert checklist item ── */
 function insertChecklist() {
   const sel = window.getSelection();
   const text = (sel && sel.rangeCount > 0) ? sel.getRangeAt(0).toString() : "checklist item";
@@ -401,7 +411,6 @@ function insertChecklist() {
   );
 }
 
-/* ── Insert blockquote ── */
 function insertQuoteBlock() {
   const sel = window.getSelection();
   const text = (sel && sel.rangeCount > 0) ? sel.getRangeAt(0).toString() : "quote...";
@@ -410,7 +419,6 @@ function insertQuoteBlock() {
   );
 }
 
-/* ── Update toolbar button active states ── */
 function updateToolbarState() {
   const states = {
     bold:      document.queryCommandState("bold"),
@@ -446,13 +454,13 @@ function openEditor(noteId = null) {
   selectedMood = null;
   clearStickerSelections();
   document.querySelectorAll(".mood-chip").forEach(c => c.classList.remove("selected"));
-  // Reset toolbar active states
   document.querySelectorAll(".tb").forEach(b => b.classList.remove("active"));
 
   if (noteId !== null) {
     const note = notes.find(n => n.id == noteId);
     if (!note) return;
     selectVoice(note.voice);
+    selectFont(note.font || "handwriting");
     if (note.mood) {
       selectedMood = note.mood;
       document.querySelectorAll(".mood-chip").forEach(c => {
@@ -468,11 +476,12 @@ function openEditor(noteId = null) {
   } else {
     const lastVoice = sessionStorage.getItem("kj_voice") || "Kunwar";
     selectVoice(lastVoice);
+    selectFont(localStorage.getItem(LS_FONT_KEY) || "handwriting");
     ta.innerHTML = "";
   }
 
   overlay.classList.add("open");
-  setTimeout(() => { ta.focus(); updateToolbarState(); }, 120);
+  setTimeout(() => { ta.focus(); updateToolbarState(); applyFontToEditor(); }, 120);
 }
 
 function closeEditor() {
@@ -505,11 +514,12 @@ async function saveEntry() {
       note.voice    = selectedVoice;
       note.mood     = selectedMood;
       note.stickers = [...selectedStickers];
+      note.font     = selectedFont;
       note.editedAt = new Date().toISOString();
       if (usingSupabase) {
         await sb.update(note.id, {
           rawText: html, voice: note.voice, mood: note.mood,
-          stickers: note.stickers, editedAt: note.editedAt,
+          stickers: note.stickers, font: note.font, editedAt: note.editedAt,
         });
       }
     }
@@ -517,6 +527,7 @@ async function saveEntry() {
     const newNote = {
       id: null, rawText: html, voice: selectedVoice,
       mood: selectedMood, stickers: [...selectedStickers],
+      font: selectedFont,
       starred: false, createdAt: new Date().toISOString(), editedAt: null,
     };
     if (usingSupabase) {
@@ -534,7 +545,6 @@ async function saveEntry() {
   closeEditor();
   renderNotes();
 }
-
 /* ══════════════════════════════════════════
    RENDER NOTES (floating cards)
 ══════════════════════════════════════════ */
@@ -604,7 +614,7 @@ function renderNotes(filterText = "") {
       ${note.starred ? '<div class="note-tag-star">⭐</div>' : ""}
       <div class="note-tag-voice ${note.voice==="Jasmin"?"jasmin":"kunwar"}">${note.voice}</div>
       ${moodStr}
-      <div class="note-body ${inkCls}">${escapeHtml(snippet)}${snippet.length >= 80 ? "…" : ""}</div>
+      <div class="note-body ${inkCls}" style="font-family:${getFontFamily(note.font)}">${escapeHtml(snippet)}${snippet.length >= 80 ? "…" : ""}</div>
       <div class="note-date">${formatDate(note.createdAt)}</div>
       ${stickerHtml}
     `;
@@ -619,7 +629,6 @@ function renderNotes(filterText = "") {
   }
 }
 
-/* ── Helpers ── */
 function getPlainText(html) {
   const tmp = document.createElement("div");
   tmp.innerHTML = html;
@@ -681,9 +690,9 @@ function openView(id) {
   `;
 
   contentEl.className = `view-content ${inkCls}`;
+  contentEl.style.fontFamily = getFontFamily(note.font);
   contentEl.innerHTML = note.rawText || "";
 
-  // Re-attach checklist handlers
   contentEl.querySelectorAll(".r-check").forEach(el => {
     el.style.cursor = "pointer";
     el.onclick = (e) => {
@@ -694,7 +703,6 @@ function openView(id) {
     };
   });
 
-  // Stickers
   stickersEl.innerHTML = "";
   (note.stickers || []).forEach(key => {
     if (key.startsWith("img_")) {

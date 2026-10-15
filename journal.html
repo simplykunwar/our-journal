@@ -54,21 +54,28 @@
         </button>
       </div>
 
+      <!-- Font selector -->
+      <div class="font-selector">
+        <span class="font-label">Font</span>
+        <button class="font-btn active" data-font="handwriting" onclick="selectFont('handwriting', true)">Handwriting</button>
+        <button class="font-btn" data-font="elegant" onclick="selectFont('elegant', true)">Elegant</button>
+        <button class="font-btn" data-font="clean" onclick="selectFont('clean', true)">Clean</button>
+        <button class="font-btn" data-font="typewriter" onclick="selectFont('typewriter', true)">Typewriter</button>
+      </div>
+
       <!-- Mood -->
       <div class="mood-label">How are you feeling?</div>
       <div class="mood-grid" id="moodGrid"></div>
 
       <!-- ── RICH TEXT TOOLBAR ── -->
       <div class="editor-toolbar" id="editorToolbar">
-        <!-- Text style -->
         <div class="toolbar-group">
-          <button class="tb" data-action="bold"      title="Bold (*text*)">𝐁</button>
-          <button class="tb" data-action="italic"    title="Italic (-text-)"><i>I</i></button>
-          <button class="tb" data-action="underline" title="Underline (_text_)"><u>U</u></button>
-          <button class="tb" data-action="strike"    title="Strikethrough (~text~)"><s>S</s></button>
+          <button class="tb" data-action="bold"      title="Bold">𝐁</button>
+          <button class="tb" data-action="italic"    title="Italic"><i>I</i></button>
+          <button class="tb" data-action="underline" title="Underline"><u>U</u></button>
+          <button class="tb" data-action="strike"    title="Strikethrough"><s>S</s></button>
         </div>
         <div class="toolbar-sep"></div>
-        <!-- Text size -->
         <div class="toolbar-group">
           <button class="tb" data-action="size-small"  title="Small text">aₛ</button>
           <button class="tb" data-action="size-normal" title="Normal text">A</button>
@@ -76,27 +83,23 @@
           <button class="tb" data-action="size-huge"   title="Huge text">A⁺⁺</button>
         </div>
         <div class="toolbar-sep"></div>
-        <!-- Headings -->
         <div class="toolbar-group">
           <button class="tb" data-action="h1" title="Heading 1">H1</button>
           <button class="tb" data-action="h2" title="Heading 2">H2</button>
         </div>
         <div class="toolbar-sep"></div>
-        <!-- Lists -->
         <div class="toolbar-group">
           <button class="tb" data-action="bullet"    title="Bullet list">• —</button>
           <button class="tb" data-action="numbered"  title="Numbered list">1.</button>
           <button class="tb" data-action="checklist" title="Checklist">☐</button>
         </div>
         <div class="toolbar-sep"></div>
-        <!-- Align -->
         <div class="toolbar-group">
           <button class="tb" data-action="align-left"   title="Align left">⬅</button>
           <button class="tb" data-action="align-center" title="Center">↔</button>
           <button class="tb" data-action="align-right"  title="Align right">➡</button>
         </div>
         <div class="toolbar-sep"></div>
-        <!-- Extras -->
         <div class="toolbar-group">
           <button class="tb" data-action="divider" title="Divider line">―</button>
           <button class="tb" data-action="quote"   title="Quote block">❝</button>

@@ -298,6 +298,28 @@ body { font-family: 'Lora', Georgia, serif; }
 .kunwar-dot { background: var(--ink-kunwar); }
 .jasmin-dot { background: var(--ink-jasmin); }
 
+/* Font selector */
+.font-selector {
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+  margin-bottom: 14px;
+}
+.font-label {
+  font-family: 'Caveat', cursive; font-size: 1rem; color: var(--accent);
+  margin-right: 4px;
+}
+.font-btn {
+  padding: 5px 14px; border-radius: 16px;
+  border: 1.5px solid var(--line-color); background: rgba(255,248,235,0.7);
+  font-size: 0.9rem; cursor: pointer; transition: all 0.18s;
+  color: var(--ink-dark);
+}
+.font-btn[data-font="handwriting"] { font-family: 'Caveat', cursive; font-size: 1.05rem; }
+.font-btn[data-font="elegant"]     { font-family: 'Lora', Georgia, serif; }
+.font-btn[data-font="clean"]       { font-family: system-ui, sans-serif; }
+.font-btn[data-font="typewriter"]  { font-family: 'Courier New', monospace; font-size: 0.85rem; }
+.font-btn:hover  { border-color: var(--accent); background: rgba(200,168,130,0.25); }
+.font-btn.active { background: rgba(139,94,60,0.18); border-color: var(--accent); font-weight: 600; }
+
 /* Mood grid */
 .mood-label { font-family: 'Caveat', cursive; font-size: 1rem; color: var(--accent); margin-bottom: 8px; }
 .mood-grid {

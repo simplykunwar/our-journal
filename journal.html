@@ -7,12 +7,13 @@
   <link rel="stylesheet" href="style.css"/>
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet"/>
 </head>
-<body class="journal-body">
+<body class="journal-body" data-theme="paper">
 
   <!-- HEADER -->
   <header class="journal-header">
     <div class="header-left">
       <span class="header-logo">♡ K &amp; J</span>
+      <span class="anniversary" id="anniversary">Together since 08/06/2026</span>
       <span class="last-visited" id="lastVisited"></span>
     </div>
     <div class="header-center">
@@ -20,6 +21,7 @@
     </div>
     <div class="header-right">
       <span class="sync-status" id="syncStatus" title="Sync status">●</span>
+      <button class="btn-icon" onclick="openSettings()" title="Settings">⚙️</button>
       <button class="btn-random" onclick="openRandomNote()">🎲 Surprise</button>
       <button class="btn-new"    onclick="openEditor()">✏️ New Entry</button>
     </div>
@@ -39,12 +41,45 @@
     </div>
   </main>
 
-  <!-- ══════════════ EDITOR MODAL ══════════════ -->
+  <!-- SETTINGS PANEL -->
+  <div class="modal-overlay" id="settingsOverlay" onclick="closeSettingsOnOverlay(event)">
+    <div class="settings-panel">
+      <button class="modal-close" onclick="closeSettings()">✕</button>
+      <h2 class="settings-title">Settings</h2>
+
+      <div class="settings-section">
+        <div class="settings-label">Theme</div>
+        <div class="theme-options">
+          <button class="theme-btn active" data-theme="paper" onclick="setTheme('paper')">Soft Paper</button>
+          <button class="theme-btn" data-theme="night" onclick="setTheme('night')">Dark Night</button>
+          <button class="theme-btn" data-theme="rose" onclick="setTheme('rose')">Rose</button>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-label">Default Font</div>
+        <div class="font-selector settings-fonts">
+          <button class="font-btn active" data-font="handwriting" onclick="selectFont('handwriting', true)">Handwriting</button>
+          <button class="font-btn" data-font="elegant" onclick="selectFont('elegant', true)">Elegant</button>
+          <button class="font-btn" data-font="clean" onclick="selectFont('clean', true)">Clean</button>
+          <button class="font-btn" data-font="typewriter" onclick="selectFont('typewriter', true)">Typewriter</button>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-label">Actions</div>
+        <button class="settings-action-btn" onclick="printJournal()">🖨️ Print Journal</button>
+      </div>
+
+      <div class="settings-footer">Together since 08 June 2026</div>
+    </div>
+  </div>
+
+  <!-- EDITOR MODAL -->
   <div class="modal-overlay" id="editorOverlay" onclick="closeEditorOnOverlay(event)">
     <div class="editor-modal">
       <button class="modal-close" onclick="closeEditor()">✕</button>
 
-      <!-- Voice selector -->
       <div class="voice-selector">
         <button class="voice-btn active" id="voiceKunwar" onclick="selectVoice('Kunwar')">
           <span class="voice-dot kunwar-dot"></span> Kunwar
@@ -54,7 +89,6 @@
         </button>
       </div>
 
-      <!-- Font selector -->
       <div class="font-selector">
         <span class="font-label">Font</span>
         <button class="font-btn active" data-font="handwriting" onclick="selectFont('handwriting', true)">Handwriting</button>
@@ -63,55 +97,63 @@
         <button class="font-btn" data-font="typewriter" onclick="selectFont('typewriter', true)">Typewriter</button>
       </div>
 
-      <!-- Mood -->
       <div class="mood-label">How are you feeling?</div>
       <div class="mood-grid" id="moodGrid"></div>
 
-      <!-- ── RICH TEXT TOOLBAR ── -->
       <div class="editor-toolbar" id="editorToolbar">
         <div class="toolbar-group">
-          <button class="tb" data-action="bold"      title="Bold">𝐁</button>
-          <button class="tb" data-action="italic"    title="Italic"><i>I</i></button>
+          <button class="tb" data-action="bold" title="Bold">𝐁</button>
+          <button class="tb" data-action="italic" title="Italic"><i>I</i></button>
           <button class="tb" data-action="underline" title="Underline"><u>U</u></button>
-          <button class="tb" data-action="strike"    title="Strikethrough"><s>S</s></button>
+          <button class="tb" data-action="strike" title="Strikethrough"><s>S</s></button>
         </div>
         <div class="toolbar-sep"></div>
         <div class="toolbar-group">
-          <button class="tb" data-action="size-small"  title="Small text">aₛ</button>
-          <button class="tb" data-action="size-normal" title="Normal text">A</button>
-          <button class="tb" data-action="size-large"  title="Large text">A⁺</button>
-          <button class="tb" data-action="size-huge"   title="Huge text">A⁺⁺</button>
+          <button class="tb" data-action="size-small" title="Small">aₛ</button>
+          <button class="tb" data-action="size-normal" title="Normal">A</button>
+          <button class="tb" data-action="size-large" title="Large">A⁺</button>
+          <button class="tb" data-action="size-huge" title="Huge">A⁺⁺</button>
         </div>
         <div class="toolbar-sep"></div>
         <div class="toolbar-group">
-          <button class="tb" data-action="h1" title="Heading 1">H1</button>
-          <button class="tb" data-action="h2" title="Heading 2">H2</button>
+          <button class="tb" data-action="h1" title="H1">H1</button>
+          <button class="tb" data-action="h2" title="H2">H2</button>
         </div>
         <div class="toolbar-sep"></div>
         <div class="toolbar-group">
-          <button class="tb" data-action="bullet"    title="Bullet list">• —</button>
-          <button class="tb" data-action="numbered"  title="Numbered list">1.</button>
+          <button class="tb" data-action="bullet" title="Bullet">• —</button>
+          <button class="tb" data-action="numbered" title="Numbered">1.</button>
           <button class="tb" data-action="checklist" title="Checklist">☐</button>
         </div>
         <div class="toolbar-sep"></div>
         <div class="toolbar-group">
-          <button class="tb" data-action="align-left"   title="Align left">⬅</button>
+          <button class="tb" data-action="align-left" title="Left">⬅</button>
           <button class="tb" data-action="align-center" title="Center">↔</button>
-          <button class="tb" data-action="align-right"  title="Align right">➡</button>
+          <button class="tb" data-action="align-right" title="Right">➡</button>
         </div>
         <div class="toolbar-sep"></div>
         <div class="toolbar-group">
-          <button class="tb" data-action="divider" title="Divider line">―</button>
-          <button class="tb" data-action="quote"   title="Quote block">❝</button>
+          <button class="tb" data-action="divider" title="Divider">―</button>
+          <button class="tb" data-action="quote" title="Quote">❝</button>
         </div>
       </div>
 
-      <!-- Writing area -->
-      <div class="editor-textarea" id="editorTextarea"
-        contenteditable="true" spellcheck="true"
-        data-placeholder="write here, love..."></div>
+      <div class="editor-textarea" id="editorTextarea" contenteditable="true" spellcheck="true" data-placeholder="write here, love..."></div>
 
-      <!-- Sticker tray -->
+      <div class="media-section">
+        <div class="media-row">
+          <label class="media-btn">📷 Add Photo
+            <input type="file" id="photoInput" accept="image/*" multiple hidden onchange="handlePhotoSelect(event)"/>
+          </label>
+          <button class="media-btn" id="voiceRecordBtn" onclick="toggleVoiceRecord()">🎤 Voice Note</button>
+          <label class="media-btn">🎨 Custom Sticker
+            <input type="file" id="stickerUploadInput" accept="image/*" hidden onchange="handleStickerUpload(event)"/>
+          </label>
+        </div>
+        <div class="photo-preview" id="photoPreview"></div>
+        <div class="voice-preview" id="voicePreview"></div>
+      </div>
+
       <div class="sticker-section">
         <div class="sticker-label">🎨 Stickers</div>
         <div class="sticker-tray" id="stickerTray"></div>
@@ -119,22 +161,27 @@
 
       <div class="editor-footer">
         <button class="btn-cancel" onclick="closeEditor()">Cancel</button>
-        <button class="btn-save"   onclick="saveEntry()">Save Entry 💾</button>
+        <button class="btn-save" onclick="saveEntry()">Save Entry 💾</button>
       </div>
     </div>
   </div>
 
-  <!-- ══════════════ VIEW MODAL ══════════════ -->
+  <!-- VIEW MODAL -->
   <div class="modal-overlay" id="viewOverlay" onclick="closeViewOnOverlay(event)">
     <div class="view-modal">
       <button class="modal-close" onclick="closeView()">✕</button>
-      <div class="view-meta"     id="viewMeta"></div>
-      <div class="view-content"  id="viewContent"></div>
+      <button class="nav-arrow nav-prev" onclick="navigateNote(-1)" title="Previous">‹</button>
+      <button class="nav-arrow nav-next" onclick="navigateNote(1)" title="Next">›</button>
+      <div class="view-meta" id="viewMeta"></div>
+      <div class="view-content" id="viewContent"></div>
+      <div class="view-photos" id="viewPhotos"></div>
+      <div class="view-voice" id="viewVoice"></div>
       <div class="view-stickers" id="viewStickers"></div>
       <div class="view-actions">
-        <button class="btn-star-view"   id="viewStarBtn"  onclick="toggleStarFromView()">⭐ Star</button>
-        <button class="btn-edit-view"                     onclick="editFromView()">✏️ Edit</button>
-        <button class="btn-delete-view"                   onclick="deleteFromView()">🗑️ Delete</button>
+        <button class="btn-star-view" id="viewStarBtn" onclick="toggleStarFromView()">⭐ Star</button>
+        <button class="btn-edit-view" onclick="editFromView()">✏️ Edit</button>
+        <button class="btn-print-view" onclick="printCurrentNote()">🖨️ Print</button>
+        <button class="btn-delete-view" onclick="deleteFromView()">🗑️ Delete</button>
       </div>
     </div>
   </div>

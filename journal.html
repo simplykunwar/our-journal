@@ -10,6 +10,9 @@
 </head>
 <body class="journal-body" data-theme="paper">
 
+  <!-- Fixed settings gear (corner) -->
+  <button class="btn-icon" id="settingsGear" onclick="openSettings()" title="Settings">⚙️</button>
+
   <header class="journal-header">
     <div class="header-left">
       <span class="header-logo">♡ K &amp; J</span>
@@ -21,7 +24,6 @@
     </div>
     <div class="header-right">
       <span class="sync-status" id="syncStatus" title="Sync status">●</span>
-      <button class="btn-icon" onclick="openSettings()" title="Settings">⚙️</button>
       <button class="btn-random" onclick="openRandomNote()">🎲 Surprise</button>
       <button class="btn-new" onclick="openEditor()">✏️ New Entry</button>
     </div>

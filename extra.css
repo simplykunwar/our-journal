@@ -1,0 +1,243 @@
+/* ═══════════════════════════════════════════
+   ANNIVERSARY + SETTINGS BUTTON
+═══════════════════════════════════════════ */
+.anniversary {
+  font-family: 'Caveat', cursive;
+  font-size: 0.9rem;
+  color: var(--accent);
+  opacity: 0.9;
+  display: block;
+}
+.btn-icon {
+  background: transparent;
+  border: 1.5px solid var(--line-color);
+  border-radius: 50%;
+  width: 36px; height: 36px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: transform 0.15s, background 0.15s;
+  display: flex; align-items: center; justify-content: center;
+}
+.btn-icon:hover { transform: scale(1.1); background: rgba(0,0,0,0.06); }
+
+/* ═══════════════════════════════════════════
+   SETTINGS PANEL
+═══════════════════════════════════════════ */
+.settings-panel {
+  position: relative;
+  background: var(--page-bg);
+  width: min(420px, 94vw);
+  border-radius: 10px;
+  padding: 28px 26px 22px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+}
+.settings-title {
+  font-family: 'Caveat', cursive;
+  font-size: 1.8rem;
+  color: var(--cover-brown);
+  margin-bottom: 20px;
+}
+.settings-section { margin-bottom: 22px; }
+.settings-label {
+  font-family: 'Caveat', cursive;
+  font-size: 1.05rem;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+.theme-options { display: flex; gap: 8px; flex-wrap: wrap; }
+.theme-btn {
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1.5px solid var(--line-color);
+  background: rgba(255,248,235,0.7);
+  font-family: 'Caveat', cursive;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.18s;
+  color: var(--ink-dark);
+}
+.theme-btn:hover { border-color: var(--accent); }
+.theme-btn.active {
+  background: rgba(139,94,60,0.18);
+  border-color: var(--accent);
+  font-weight: 600;
+}
+.settings-action-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1.5px solid var(--line-color);
+  background: rgba(255,248,235,0.8);
+  font-family: 'Caveat', cursive;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  color: var(--ink-dark);
+}
+.settings-action-btn:hover {
+  background: var(--cover-brown);
+  color: #fef0d0;
+  border-color: var(--cover-brown);
+}
+.settings-footer {
+  margin-top: 18px;
+  text-align: center;
+  font-family: 'Caveat', cursive;
+  font-size: 0.95rem;
+  color: var(--accent);
+  opacity: 0.7;
+}
+
+/* ═══════════════════════════════════════════
+   THEMES
+═══════════════════════════════════════════ */
+body[data-theme="night"] {
+  --page-bg: #1e1a17;
+  --page-dark: #2a2420;
+  --page-mid: #342e28;
+  --line-color: #4a4038;
+  --ink-dark: #e8dcc8;
+  --ink-kunwar: #8ab4f8;
+  --ink-jasmin: #f8a0b4;
+  --accent: #c4a882;
+  --cover-brown: #c4a882;
+  --toolbar-bg: #2a2420;
+  --toolbar-btn: #3a322c;
+  --toolbar-hover: #4a4038;
+  --shadow: rgba(0,0,0,0.4);
+  --modal-overlay: rgba(10,8,6,0.7);
+}
+body[data-theme="night"] .journal-body {
+  background-image:
+    repeating-linear-gradient(to bottom, transparent 0px, transparent 31px, var(--line-color) 31px, var(--line-color) 32px),
+    linear-gradient(to right, transparent 58px, #5a3a3a 58px, #5a3a3a 60px, transparent 60px),
+    radial-gradient(ellipse at 30% 0%, #2a2420 0%, var(--page-bg) 70%);
+}
+body[data-theme="night"] .journal-header {
+  background: rgba(30,26,23,0.95);
+  border-bottom-color: var(--line-color);
+}
+body[data-theme="night"] .search-bar {
+  background: rgba(40,36,32,0.9);
+  color: var(--ink-dark);
+}
+body[data-theme="night"] .note-card,
+body[data-theme="night"] .editor-modal,
+body[data-theme="night"] .view-modal,
+body[data-theme="night"] .settings-panel {
+  background: var(--page-dark);
+  border-color: var(--line-color);
+}
+
+body[data-theme="rose"] {
+  --page-bg: #fce8ec;
+  --page-dark: #f5d0d8;
+  --page-mid: #f8dce2;
+  --line-color: #e0b0bc;
+  --ink-dark: #4a2030;
+  --ink-kunwar: #3a2a5a;
+  --ink-jasmin: #8b1a3a;
+  --accent: #a05070;
+  --cover-brown: #8b3a5a;
+  --toolbar-bg: #f5d0d8;
+  --toolbar-btn: #e8b8c4;
+  --toolbar-hover: #d8a0b0;
+  --shadow: rgba(120,40,60,0.15);
+  --modal-overlay: rgba(60,20,30,0.5);
+}
+body[data-theme="rose"] .journal-body {
+  background-image:
+    repeating-linear-gradient(to bottom, transparent 0px, transparent 31px, var(--line-color) 31px, var(--line-color) 32px),
+    linear-gradient(to right, transparent 58px, #e0a0b0 58px, #e0a0b0 60px, transparent 60px),
+    radial-gradient(ellipse at 30% 0%, #fef0f4 0%, var(--page-bg) 70%);
+}
+
+/* ═══════════════════════════════════════════
+   NAV ARROWS
+═══════════════════════════════════════════ */
+.nav-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  border: 1.5px solid var(--line-color);
+  background: rgba(255,248,235,0.9);
+  font-size: 1.6rem;
+  color: var(--ink-dark);
+  cursor: pointer;
+  z-index: 10;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+.nav-arrow:hover {
+  background: var(--cover-brown);
+  color: #fef0d0;
+  border-color: var(--cover-brown);
+}
+.nav-prev { left: 12px; }
+.nav-next { right: 12px; }
+
+/* ═══════════════════════════════════════════
+   MEDIA (photos / voice)
+═══════════════════════════════════════════ */
+.media-section {
+  margin-top: 12px;
+  border-top: 1px dashed var(--line-color);
+  padding-top: 12px;
+}
+.media-row {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px;
+}
+.media-btn {
+  padding: 7px 14px;
+  border-radius: 16px;
+  border: 1.5px solid var(--line-color);
+  background: rgba(255,248,235,0.7);
+  font-family: 'Caveat', cursive;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  color: var(--ink-dark);
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.media-btn:hover { border-color: var(--accent); background: rgba(200,168,130,0.2); }
+.media-btn.recording {
+  background: rgba(180,40,40,0.15);
+  border-color: #b02828;
+  color: #8b1a1a;
+  animation: pulse 1s infinite;
+}
+.photo-preview, .view-photos {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;
+}
+.photo-preview img, .view-photos img {
+  width: 72px; height: 72px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1.5px solid var(--line-color);
+}
+.photo-thumb-wrap { position: relative; }
+.photo-remove {
+  position: absolute; top: -6px; right: -6px;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: #8b1a1a;
+  color: #fff;
+  font-size: 0.7rem;
+  border: none;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.voice-preview, .view-voice { margin-top: 8px; }
+.voice-preview audio, .view-voice audio {
+  width: 100%;
+  max-width: 320px;
+  height: 36px;
+}
+
+@media print {
+  .journal-header, .daily-quote-bar, .modal-overlay, .nav-arrow, .view-actions { display: none !important; }
+  .note-card { position: relative !important; left: auto !important; top: auto !important; page-break-inside: avoid; margin-bottom: 20px; }
+}

@@ -1,24 +1,33 @@
 /* ═══════════════════════════════════════════
-   ANNIVERSARY + SETTINGS BUTTON
+   ANNIVERSARY + SETTINGS GEAR
 ═══════════════════════════════════════════ */
 .anniversary {
   font-family: 'Caveat', cursive;
-  font-size: 0.9rem;
+  font-size: 1.05rem;
   color: var(--accent);
-  opacity: 0.9;
+  opacity: 0.95;
   display: block;
+  letter-spacing: 0.02em;
 }
 .btn-icon {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  z-index: 150;
   background: transparent;
-  border: 1.5px solid var(--line-color);
-  border-radius: 50%;
-  width: 36px; height: 36px;
-  font-size: 1.1rem;
+  border: none;
+  width: 48px; height: 48px;
+  font-size: 1.7rem;
   cursor: pointer;
-  transition: transform 0.15s, background 0.15s;
+  transition: transform 0.2s, opacity 0.2s;
   display: flex; align-items: center; justify-content: center;
+  opacity: 0.55;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.15));
 }
-.btn-icon:hover { transform: scale(1.1); background: rgba(0,0,0,0.06); }
+.btn-icon:hover {
+  transform: scale(1.15) rotate(20deg);
+  opacity: 0.95;
+}
 
 /* ═══════════════════════════════════════════
    SETTINGS PANEL
@@ -238,6 +247,6 @@ body[data-theme="rose"] .journal-body {
 }
 
 @media print {
-  .journal-header, .daily-quote-bar, .modal-overlay, .nav-arrow, .view-actions { display: none !important; }
+  .journal-header, .daily-quote-bar, .modal-overlay, .nav-arrow, .view-actions, .btn-icon { display: none !important; }
   .note-card { position: relative !important; left: auto !important; top: auto !important; page-break-inside: avoid; margin-bottom: 20px; }
 }

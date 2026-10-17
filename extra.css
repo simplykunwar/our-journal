@@ -1,6 +1,4 @@
-/* ═══════════════════════════════════════════
-   ANNIVERSARY + SETTINGS GEAR
-═══════════════════════════════════════════ */
+/* ANNIVERSARY + SETTINGS GEAR */
 .anniversary {
   font-family: 'Caveat', cursive;
   font-size: 1.05rem;
@@ -11,27 +9,25 @@
 }
 .btn-icon {
   position: fixed;
-  top: 18px;
-  right: 18px;
+  bottom: 24px;
+  right: 24px;
   z-index: 150;
   background: transparent;
   border: none;
-  width: 48px; height: 48px;
-  font-size: 1.7rem;
+  width: 52px; height: 52px;
+  font-size: 1.85rem;
   cursor: pointer;
   transition: transform 0.2s, opacity 0.2s;
   display: flex; align-items: center; justify-content: center;
-  opacity: 0.55;
-  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.15));
+  opacity: 0.5;
+  filter: drop-shadow(0 1px 3px rgba(0,0,0,0.2));
 }
 .btn-icon:hover {
-  transform: scale(1.15) rotate(20deg);
-  opacity: 0.95;
+  transform: scale(1.2) rotate(25deg);
+  opacity: 1;
 }
 
-/* ═══════════════════════════════════════════
-   SETTINGS PANEL
-═══════════════════════════════════════════ */
+/* SETTINGS PANEL */
 .settings-panel {
   position: relative;
   background: var(--page-bg);
@@ -97,9 +93,7 @@
   opacity: 0.7;
 }
 
-/* ═══════════════════════════════════════════
-   THEMES
-═══════════════════════════════════════════ */
+/* THEMES */
 body[data-theme="night"] {
   --page-bg: #1e1a17;
   --page-dark: #2a2420;
@@ -161,9 +155,7 @@ body[data-theme="rose"] .journal-body {
     radial-gradient(ellipse at 30% 0%, #fef0f4 0%, var(--page-bg) 70%);
 }
 
-/* ═══════════════════════════════════════════
-   NAV ARROWS
-═══════════════════════════════════════════ */
+/* NAV ARROWS */
 .nav-arrow {
   position: absolute;
   top: 50%;
@@ -188,9 +180,7 @@ body[data-theme="rose"] .journal-body {
 .nav-prev { left: 12px; }
 .nav-next { right: 12px; }
 
-/* ═══════════════════════════════════════════
-   MEDIA (photos / voice)
-═══════════════════════════════════════════ */
+/* MEDIA */
 .media-section {
   margin-top: 12px;
   border-top: 1px dashed var(--line-color);

@@ -1,70 +1,81 @@
-/* ══════════════════════════════════════
-   EXTRA FEATURES — Settings, Themes, Anniversary,
-   Nav arrows, Print, Photos, Voice notes, Realtime
-══════════════════════════════════════ */
+/* EXTRA FEATURES — Settings, Themes, Anniversary, Nav, Print, Photos, Voice */
 
-/* ── Extra state ───────────────────────── */
-let selectedPhotos    = [];
-let selectedVoiceNote = null;
-let mediaRecorder     = null;
-let recordedChunks    = [];
-let isRecording       = false;
-let sortedNoteIds     = [];
+var selectedPhotos = [];
+var selectedVoiceNote = null;
+var mediaRecorder = null;
+var recordedChunks = [];
+var isRecording = false;
+var sortedNoteIds = [];
 
-/* ── Anniversary count-up ────────────────── */
 function updateAnniversary() {
-  const el = document.getElementById("anniversary");
+  var el = document.getElementById("anniversary");
   if (!el) return;
-  const start = new Date("2026-06-08T00:00:00");
-  const now   = new Date();
-  const diff  = Math.max(0, now - start);
-  const days  = Math.floor(diff / 86400000);
-  const hours = Math.floor((diff % 86400000) / 3600000);
+  var start = new Date("2026-06-08T00:00:00");
+  var now = new Date();
+  var diff = Math.max(0, now - start);
+  var days = Math.floor(diff / 86400000);
   if (days === 0) {
-    el.textContent = hours < 1 ? "Together since today \u{1F90D}" : `Together \u00b7 ${hours}h`;
+    el.textContent = "Together since today";
   } else {
-    el.textContent = `Together \u00b7 ${days} day${days !== 1 ? "s" : ""} \u{1F90D}`;
+    el.textContent = "Together \u00b7 " + days + (days === 1 ? " day" : " days");
   }
 }
 
-/* ── Themes ──────────────────────────────── */
 function applySavedTheme() {
-  const theme = localStorage.getItem("kj_theme") || "paper";
+  var theme = localStorage.getItem("kj_theme") || "paper";
   setTheme(theme, false);
 }
 
-function setTheme(theme, save = true) {
+function setTheme(theme, save) {
+  if (save === undefined) save = true;
   document.body.setAttribute("data-theme", theme);
   if (save) localStorage.setItem("kj_theme", theme);
-  document.querySelectorAll(".theme-btn").forEach(btn => {
-    btn.classList.toggle("active", btn.dataset.theme === theme);
-  });
+  var btns = document.querySelectorAll(".theme-btn");
+  for (var i = 0; i < btns.length; i++) {
+    if (btns[i].getAttribute("data-theme") === theme) {
+      btns[i].classList.add("active");
+    } else {
+      btns[i].classList.remove("active");
+    }
+  }
 }
 
-/* ── Settings panel ──────────────────────── */
 function openSettings() {
-  const el = document.getElementById("settingsOverlay");
-  if (!el) return;
+  var el = document.getElementById("settingsOverlay");
+  if (!el) {
+    console.error("settingsOverlay not found");
+    return;
+  }
   el.classList.add("open");
-  document.querySelectorAll(".settings-fonts .font-btn").forEach(btn => {
-    btn.classList.toggle("active", btn.dataset.font === (typeof selectedFont !== "undefined" ? selectedFont : "handwriting"));
-  });
-  const theme = localStorage.getItem("kj_theme") || "paper";
-  document.querySelectorAll(".theme-btn").forEach(btn => {
-    btn.classList.toggle("active", btn.dataset.theme === theme);
-  });
+  var theme = localStorage.getItem("kj_theme") || "paper";
+  var btns = document.querySelectorAll(".theme-btn");
+  for (var i = 0; i < btns.length; i++) {
+    if (btns[i].getAttribute("data-theme") === theme) {
+      btns[i].classList.add("active");
+    } else {
+      btns[i].classList.remove("active");
+    }
+  }
+  var fontKey = (typeof selectedFont !== "undefined") ? selectedFont : "handwriting";
+  var fbtns = document.querySelectorAll(".settings-fonts .font-btn");
+  for (var j = 0; j < fbtns.length; j++) {
+    if (fbtns[j].getAttribute("data-font") === fontKey) {
+      fbtns[j].classList.add("active");
+    } else {
+      fbtns[j].classList.remove("active");
+    }
+  }
 }
 
 function closeSettings() {
-  const el = document.getElementById("settingsOverlay");
+  var el = document.getElementById("settingsOverlay");
   if (el) el.classList.remove("open");
 }
 
 function closeSettingsOnOverlay(e) {
-  if (e.target === document.getElementById("settingsOverlay")) closeSettings();
+  if (e.target && e.target.id === "settingsOverlay") closeSettings();
 }
 
-/* ── Print ───────────────────────────────── */
 function printJournal() {
   closeSettings();
   window.print();
@@ -74,177 +85,186 @@ function printCurrentNote() {
   window.print();
 }
 
-/* ── Prev / Next navigation ──────────────── */
 function navigateNote(dir) {
-  if (!viewingId || sortedNoteIds.length === 0) return;
-  const idx = sortedNoteIds.indexOf(String(viewingId));
+  if (typeof viewingId === "undefined" || viewingId === null) return;
+  if (!sortedNoteIds || sortedNoteIds.length === 0) {
+    if (typeof notes !== "undefined" && notes.length) {
+      sortedNoteIds = notes.slice().sort(function(a, b) {
+        if (a.starred && !b.starred) return -1;
+        if (!a.starred && b.starred) return 1;
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      }).map(function(n) { return String(n.id); });
+    } else {
+      return;
+    }
+  }
+  var idx = sortedNoteIds.indexOf(String(viewingId));
   if (idx === -1) return;
-  const next = idx + dir;
+  var next = idx + dir;
   if (next < 0 || next >= sortedNoteIds.length) return;
-  openView(sortedNoteIds[next]);
+  if (typeof openView === "function") openView(sortedNoteIds[next]);
 }
 
-/* ── Photos ──────────────────────────────── */
 function handlePhotoSelect(e) {
-  const files = Array.from(e.target.files || []);
-  files.forEach(file => {
-    if (!file.type.startsWith("image/")) return;
-    const url = URL.createObjectURL(file);
-    selectedPhotos.push({ url, file, isNew: true });
-  });
+  var files = e.target.files;
+  if (!files) return;
+  for (var i = 0; i < files.length; i++) {
+    var file = files[i];
+    if (!file.type || file.type.indexOf("image/") !== 0) continue;
+    var url = URL.createObjectURL(file);
+    selectedPhotos.push({ url: url, file: file, isNew: true });
+  }
   renderPhotoPreview();
   e.target.value = "";
 }
 
 function renderPhotoPreview() {
-  const el = document.getElementById("photoPreview");
+  var el = document.getElementById("photoPreview");
   if (!el) return;
   el.innerHTML = "";
-  selectedPhotos.forEach((p, i) => {
-    const wrap = document.createElement("div");
+  for (var i = 0; i < selectedPhotos.length; i++) {
+    var wrap = document.createElement("div");
     wrap.className = "photo-thumb-wrap";
-    wrap.innerHTML = `<img src="${p.url}" alt="photo"/><button class="photo-remove" onclick="removePhoto(${i})">\u2715</button>`;
+    wrap.innerHTML = '<img src="' + selectedPhotos[i].url + '" alt="photo"/><button class="photo-remove" onclick="removePhoto(' + i + ')">X</button>';
     el.appendChild(wrap);
-  });
+  }
 }
 
 function removePhoto(idx) {
-  const p = selectedPhotos[idx];
-  if (p && p.isNew && p.url.startsWith("blob:")) URL.revokeObjectURL(p.url);
+  var p = selectedPhotos[idx];
+  if (p && p.isNew && p.url && p.url.indexOf("blob:") === 0) URL.revokeObjectURL(p.url);
   selectedPhotos.splice(idx, 1);
   renderPhotoPreview();
 }
 
-/* ── Voice notes ─────────────────────────── */
-async function toggleVoiceRecord() {
-  const btn = document.getElementById("voiceRecordBtn");
+function toggleVoiceRecord() {
+  var btn = document.getElementById("voiceRecordBtn");
   if (!btn) return;
+
   if (!isRecording) {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      alert("Voice notes need a modern browser with microphone support.");
+      return;
+    }
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(function(stream) {
       recordedChunks = [];
-      mediaRecorder = new MediaRecorder(stream);
-      mediaRecorder.ondataavailable = e => { if (e.data.size > 0) recordedChunks.push(e.data); };
-      mediaRecorder.onstop = () => {
-        const blob = new Blob(recordedChunks, { type: "audio/webm" });
-        const url  = URL.createObjectURL(blob);
-        selectedVoiceNote = { url, blob, isNew: true };
+      try {
+        mediaRecorder = new MediaRecorder(stream);
+      } catch (err) {
+        alert("Could not start recorder on this browser.");
+        stream.getTracks().forEach(function(t) { t.stop(); });
+        return;
+      }
+      mediaRecorder.ondataavailable = function(e) {
+        if (e.data && e.data.size > 0) recordedChunks.push(e.data);
+      };
+      mediaRecorder.onstop = function() {
+        var blob = new Blob(recordedChunks, { type: "audio/webm" });
+        var url = URL.createObjectURL(blob);
+        selectedVoiceNote = { url: url, blob: blob, isNew: true };
         renderVoicePreview();
-        stream.getTracks().forEach(t => t.stop());
+        stream.getTracks().forEach(function(t) { t.stop(); });
       };
       mediaRecorder.start();
       isRecording = true;
       btn.classList.add("recording");
-      btn.textContent = "\u23F9 Stop Recording";
-    } catch (err) {
-      alert("Microphone access needed for voice notes \u{1F3A4}");
-    }
+      btn.textContent = "Stop Recording";
+    }).catch(function() {
+      alert("Please allow microphone access for voice notes.");
+    });
   } else {
-    if (mediaRecorder) mediaRecorder.stop();
+    if (mediaRecorder && mediaRecorder.state !== "inactive") {
+      mediaRecorder.stop();
+    }
     isRecording = false;
     btn.classList.remove("recording");
-    btn.textContent = "\u{1F3A4} Voice Note";
+    btn.textContent = "Voice Note";
   }
 }
 
 function renderVoicePreview() {
-  const el = document.getElementById("voicePreview");
+  var el = document.getElementById("voicePreview");
   if (!el) return;
-  if (!selectedVoiceNote) { el.innerHTML = ""; return; }
-  el.innerHTML = `<audio controls src="${selectedVoiceNote.url}"></audio>
-    <button class="media-btn" style="margin-left:8px" onclick="clearVoiceNote()">Remove</button>`;
+  if (!selectedVoiceNote) {
+    el.innerHTML = "";
+    return;
+  }
+  el.innerHTML = '<audio controls src="' + selectedVoiceNote.url + '"></audio> <button class="media-btn" onclick="clearVoiceNote()">Remove</button>';
 }
 
 function clearVoiceNote() {
-  if (selectedVoiceNote && selectedVoiceNote.isNew && selectedVoiceNote.url.startsWith("blob:")) {
+  if (selectedVoiceNote && selectedVoiceNote.isNew && selectedVoiceNote.url && selectedVoiceNote.url.indexOf("blob:") === 0) {
     URL.revokeObjectURL(selectedVoiceNote.url);
   }
   selectedVoiceNote = null;
   renderVoicePreview();
 }
 
-/* ── Custom sticker upload ───────────────── */
 function handleStickerUpload(e) {
-  const file = e.target.files && e.target.files[0];
-  if (!file || !file.type.startsWith("image/")) return;
-  const url = URL.createObjectURL(file);
+  var file = e.target.files && e.target.files[0];
+  if (!file || !file.type || file.type.indexOf("image/") !== 0) return;
+  var url = URL.createObjectURL(file);
   if (typeof IMAGE_STICKERS !== "undefined") {
-    IMAGE_STICKERS.push({ src: url, alt: "custom", file, isNew: true });
+    IMAGE_STICKERS.push({ src: url, alt: "custom", file: file, isNew: true });
     if (typeof buildStickerTray === "function") buildStickerTray();
     if (typeof selectedStickers !== "undefined") {
-      selectedStickers.push(`img_${IMAGE_STICKERS.length - 1}`);
+      selectedStickers.push("img_" + (IMAGE_STICKERS.length - 1));
     }
   }
   e.target.value = "";
 }
 
-/* ── Realtime polling ────────────────────── */
-let realtimeTimer = null;
-function startRealtime() {
-  if (realtimeTimer) clearInterval(realtimeTimer);
-  realtimeTimer = setInterval(async () => {
-    if (typeof usingSupabase === "undefined" || !usingSupabase || document.hidden) return;
-    if (typeof sb === "undefined" || typeof notes === "undefined") return;
-    try {
-      const rows = await sb.getAll();
-      if (!rows) return;
-      if (rows.length !== notes.length ||
-          (rows[0] && notes[0] && String(rows[0].id) !== String(notes[0].id))) {
-        notes = rows.map(r => ({
-          id: r.id, rawText: r.raw_text, voice: r.voice,
-          mood: r.mood, stickers: r.stickers || [],
-          starred: r.starred, createdAt: r.created_at, editedAt: r.edited_at,
-          font: r.font || "handwriting",
-          photos: r.photos || [],
-          voiceNote: r.voice_note || null,
-        }));
-        if (typeof saveLocalCache === "function") saveLocalCache();
-        if (typeof renderNotes === "function") renderNotes();
-      }
-    } catch {}
-  }, 45000);
-}
-
-/* ── Hook into existing openView for nav list + media display ── */
-(function patchOpenView() {
+function setupOpenViewPatch() {
   if (typeof openView !== "function") return;
-  const _openView = openView;
+  if (window._viewPatched) return;
+  window._viewPatched = true;
+  var original = openView;
   window.openView = function(id) {
-    _openView(id);
-    if (typeof notes !== "undefined") {
-      sortedNoteIds = notes
-        .slice()
-        .sort((a, b) => {
-          if (a.starred && !b.starred) return -1;
-          if (!a.starred && b.starred) return 1;
-          return new Date(b.createdAt) - new Date(a.createdAt);
-        })
-        .map(n => String(n.id));
+    original(id);
+    if (typeof notes !== "undefined" && notes.length) {
+      sortedNoteIds = notes.slice().sort(function(a, b) {
+        if (a.starred && !b.starred) return -1;
+        if (!a.starred && b.starred) return 1;
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      }).map(function(n) { return String(n.id); });
     }
-    const note = (typeof notes !== "undefined") ? notes.find(n => String(n.id) === String(id)) : null;
-    const photosEl = document.getElementById("viewPhotos");
+    var note = null;
+    if (typeof notes !== "undefined") {
+      for (var i = 0; i < notes.length; i++) {
+        if (String(notes[i].id) === String(id)) { note = notes[i]; break; }
+      }
+    }
+    var photosEl = document.getElementById("viewPhotos");
     if (photosEl) {
       photosEl.innerHTML = "";
-      ((note && note.photos) || []).forEach(url => {
-        const img = document.createElement("img");
-        img.src = url; img.alt = "photo";
-        img.onclick = () => window.open(url, "_blank");
+      var photos = (note && note.photos) ? note.photos : [];
+      for (var p = 0; p < photos.length; p++) {
+        var img = document.createElement("img");
+        img.src = photos[p];
+        img.alt = "photo";
         photosEl.appendChild(img);
-      });
+      }
     }
-    const voiceEl = document.getElementById("viewVoice");
+    var voiceEl = document.getElementById("viewVoice");
     if (voiceEl) {
-      voiceEl.innerHTML = (note && note.voiceNote)
-        ? `<audio controls src="${note.voiceNote}"></audio>`
-        : "";
+      if (note && note.voiceNote) {
+        voiceEl.innerHTML = '<audio controls src="' + note.voiceNote + '"></audio>';
+      } else {
+        voiceEl.innerHTML = "";
+      }
     }
   };
-})();
+}
 
-/* ── Init extras when DOM is ready ───────── */
-document.addEventListener("DOMContentLoaded", () => {
+function initExtras() {
   updateAnniversary();
   applySavedTheme();
-  startRealtime();
+  setupOpenViewPatch();
   setInterval(updateAnniversary, 3600000);
-});
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initExtras);
+} else {
+  initExtras();
+}
